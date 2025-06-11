@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="container">
+    <h2 class="text-center mb-4">
+        Авторизация
+    </h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post" class="card p-4 shadow">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success w-100">
+                    Войти
+                </button>
+                <p class="text-center mt-3">
+                    Еще нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйся!</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock main %}

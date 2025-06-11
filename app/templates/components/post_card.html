@@ -1,0 +1,33 @@
+<div class="card mb-3 h-100 m-3">
+    {% if post.get_first_media %}
+        {% if post.get_first_media.file %}
+            <img src="{{ post.get_first_media.file.url }}" alt="" class="card-img-top">
+        {% else %}
+            <img src="{{ post.get_first_media.url }}" alt="" class="card-img-top">
+        {% endif %}
+    {% else %}
+        <img src="https://kare.ee/images/no-image.jpg" alt="" class="card-img-top">
+    {% endif %}
+    <div class="card-body">
+        <h5 class="card-title">
+            {{ post.title }}
+        </h5>
+        <p class="card-text">
+            {{ post.content|truncatechars:100 }}
+        </p>
+        <p class="text-muted mb-2">
+            Автор: {{ post.author.username }}
+        </p>
+        <div class="card-footer d-flex justify-content-between text-muted">
+            <small>
+                Лайки: {{ post.get_likes_count }}
+            </small>
+            <small>
+                Дизы: {{ post.get_dislikes_count }}
+            </small>
+            <small>
+                Комменты: {{ post.get_comments_count }}
+            </small>
+        </div>
+    </div>
+</div>
