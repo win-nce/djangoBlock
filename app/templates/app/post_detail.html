@@ -10,7 +10,42 @@
             <img src="{{ post.get_first_media.file.url }}" alt="" class="card-img-top img-fluid">
             {% endif %}
         {% endif %}
-        <div class="card-body">
+        <div class="card-body pb-0">
+            <div class="d-flex justofy-content-between flex-wrap gap-2 mb-2">
+                <div class="btn-group">
+                    <form action="#" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-success">
+                            Лайк {{ post.get_likes_count }}
+                        </button>
+                    </form>
+                    <form action="#" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger">
+                            Дизлайк {{ post.get_dislikes_count }}
+                        </button>
+                    </form>   
+                    <a href="#" class="btn btn-outline-warning">
+                        Комментарий {{ post.get_comments_count }}
+                    </a>                 
+                </div>
+                <div class="btn-group">
+                    {% if user == post.author %}
+                    <a href="" class="btn btn-outline-primary">
+                        Редактировать
+                    </a>
+                    <a href="" class="btn btn-outline-danger">
+                        удалить
+                    </a>
+                    {% else %}
+                    <a href="" class="btn btn-outline-danger">
+                        Подать Жалобу
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body pt-0">
             <h2 class="card-title">
                 {{ post.title }}
             </h2>
@@ -23,42 +58,55 @@
             <p class="card-text">
                 {{ post.content }}
             </p>
-            <div class="d-flex justify-content-betweeen">
-                <a href="#" class="btn btn-outline-success">
-                    Лайк {{ post.likes_count }}
-                </a>
-                <a href="#" class="btn btn-outline-danger">
-                    Дизлайк {{ post.dislikes_count }}
-                </a>
-            </div>
-            <div class="d-flex justify-content-betweeen">
-                <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-outline-warning">
-                        Изменить
-                    </a>
-                    <a href="#" class="btn btn-outline-danger">
-                        Удалить
-                    </a>
-                </div>    
-            </div>
         </div>
-    </div>
-    {% if post.images %}
-    <h3 class="mt-4">
-        Галерея
-    </h3>
-    <div class="row">
-        {% for image in post.images %}
-        <div class="col-m-4 mb-3">
-            {% if image.url %}
-            <img src="{{ image.url }}" alt="" class="img-fluid rounded shadow-sm">
-            {% else %}
-            <img src="{{ image.file.url }}" alt="" class="img-fluid rounded shadow-sm">
-            {% endif %}
+        {% if post.media %}
+            <div id="postCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+                <div class="carousel-inner" style="max-height: 300px; overflow: hidden;">
+                    {% for image in post.media.all %}
+                    <div class="carousel-item {% if forloop.first %} active {% endif %}">
+                        {% if image.file %}
+                        <img src="{{ image.file.url }}" alt="" class="d-block w-100">
+                        {% else %}
+                        <img src="{{ image.url }}" alt="" class="d-block w-100">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#postCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Предыдущий</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#postCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Следующий</span>
+                </button>
+            </div>
+        {% endif %}
+        {% if post.comments.exists %}
+        <div class="card-body border-top">
+            <h5 class="mb-3">
+                Комментарии:
+            </h5>
+            <ul class="list-unstyled">
+                {% for comment in post.comments.all %}
+                <li class="mb-3 pb-2 border-bottom">
+                    <p class="mb-1">
+                        <strong>{{ comment.author.username }}</strong>
+                        <small class="text-muted">{{ comment.created_at }}</small>
+                    </p>
+                    <p class="mb-0">
+                        {{ comment.body }}
+                    </p>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        {% endfor %}
+        {% else %}
+        <div class="card-body border-top">
+            <p class="text-muted">Комментариев пока нет</p>    
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 {% endblock main %}
