@@ -1,6 +1,9 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
-from app.views import IndexView, CustomLoginView, register, PostDetailView, PostListView, PostDeleteView, PostCreateView, PostUpdateView
+from app.views import (IndexView, CustomLoginView, register, 
+                       PostDetailView, PostListView, PostDeleteView, 
+                       PostCreateView, PostUpdateView, 
+                       like_post, dislike_post, create_comment)
 
 
 urlpatterns = [
@@ -15,4 +18,10 @@ urlpatterns = [
     path("posts/delete/<int:pk>", PostDeleteView.as_view(), name="post-delete"), # Удаление Поста
     path("posts/create", PostCreateView.as_view(), name="post-create"), # Содание Поста
     path("posts/update/<int:pk>", PostUpdateView.as_view(), name="post-update"), # Изменение Поста
+    
+    
+    # like and dislike
+    path("posts/<int:post_id>/like", like_post, name="like"),
+    path("posts/<int:post_id>/dislike", dislike_post, name="dislike"),
+    path("posts/<int:post_id>/comment", create_comment, name="comment"),
 ]

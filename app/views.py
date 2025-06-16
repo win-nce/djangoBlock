@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect, get_objest_or_404
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView
-from app.models import Post, Dislike, Like
-from app.forms import PostForm, CustomUserCreationForm
+from app.models import Post, Dislike, Like, Report
+from app.forms import PostForm, CustomUserCreationForm, CommentForm
 
 # TODO: Сделать Cтраницу Главную Index
 class IndexView(ListView):
@@ -72,6 +73,13 @@ class PostDetailView(DetailView):
     # иимя переменной в Шаблон
     context_object_name = "post"
 
+    def get_context_data(self, **kwargs):
+        """
+        Помогает засунуть доп переменные
+        """
+        context = super().get_context_data(**kwargs)
+        context["comment_form"] = CommentForm # добавили переменную comment_form
+        return context
 
 # TODO: Сделать Cтраницу Изменение Поста
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -103,12 +111,6 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == post.author
 
 
-# TODO: Сделать Cтраницу Создание Жалоб
-
-
-
-# TODO: Сделать Cтраницу Список жалоб Пользователя
-
 # TODO: сделать РЕГ/Авторизация
 # TODO: Регистрация
 def register(request):
@@ -133,12 +135,13 @@ class CustomLoginView(LoginView):
     success_url = reverse_lazy("index")
 
 
+@login_required
 def like_post(request, post_id):
     if request.method == "POST":
-        post = get_objest_or_404(Post, pk=post_id)
+        post = get_object_or_404(Post, pk=post_id)
 
         # Удаление дизлайка
-        Dislike.object.filter(post=post, user=request.user).delete()
+        Dislike.objects.filter(post=post, user=request.user).delete()
         like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if not created:
@@ -146,16 +149,50 @@ def like_post(request, post_id):
 
         return redirect("post-detail", post_id)
 
-
+@login_required
 def dislike_post(request, post_id):
     if request.method == "POST":
-        post = get_objest_or_404(Post, pk=post_id)
+        post = get_object_or_404(Post, pk=post_id)
 
         # Удаление лайка
-        Like.object.filter(post=post, user=request.user).delete()
+        Like.objects.filter(post=post, user=request.user).delete()
         dislike, created = Dislike.objects.get_or_create(user=request.user, post=post)
         
         if not created:
             dislike.delete()
 
         return redirect("post-detail", post_id)
+
+@login_required
+def create_comment(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, pk=post_id)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user # Вручную указали Пользователя который создал коммент
+            comment.post = post # Вручную указали Пост которому создали коммент
+            comment.save() #сохранили коммент
+            return redirect("post-detail", post_id)
+        else:
+            return redirect("post-detail", post_id)
+    else:
+        return redirect("post-detail", post_id)
+
+def about_us(request):
+    pass
+
+# TODO: Сделать Cтраницу Создание Жалоб
+def create_report(request, post_id):
+    pass
+
+
+# TODO: Сделать Cтраницу Список жалоб Пользователя
+class RepostListView(LoginRequiredMixin, ListView):
+    model = Report
+    template_name = "app/report_list.html"
+    context_object_name = "reports"
+
+    def get_queryset(self): # Фильтруем данные
+        # сделали так чтобы пользователь видел только свои жалобы
+        return Report.objects.filter(user=self.request.user)
