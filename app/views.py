@@ -5,8 +5,9 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.models import User
 from app.models import Post, Dislike, Like, Report
-from app.forms import PostForm, CustomUserCreationForm, CommentForm
+from app.forms import PostForm, CustomUserCreationForm, CommentForm, ReportForm, UserChangeForm
 
 # TODO: Сделать Cтраницу Главную Index
 class IndexView(ListView):
@@ -178,21 +179,73 @@ def create_comment(request, post_id):
             return redirect("post-detail", post_id)
     else:
         return redirect("post-detail", post_id)
-
+# Дз Сделать страницу о нас 
 def about_us(request):
     pass
 
-# TODO: Сделать Cтраницу Создание Жалоб
-def create_report(request, post_id):
-    pass
 
 
-# TODO: Сделать Cтраницу Список жалоб Пользователя
-class RepostListView(LoginRequiredMixin, ListView):
+# TODO: Создание Жалоб 
+@login_required
+def create_resport(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    #Когда человек заполнил форму
+    if request.method == "Post":        
+        form = ReportForm(request.POST)
+        if form.is_valid:
+            report = form.save(commit=False)
+            report.user = request.user
+            report.post = post
+            report.save()
+            return redirect("post-detail", post_id)
+        else:
+            form = ReportForm()
+            return render(
+                request,
+                "app/report_form.html",
+                {
+                    "form": form,
+                    "post_id": post_id,
+                }
+            )
+    # Когда человек впервые зашел на страницу 
+    else:
+        form = ReportForm()
+        return render(
+                request,
+                "app/report_form.html",
+                {
+                    "form": form,
+                    "post_id": post_id,
+                }
+            )
+
+
+# TODO: Получение Списков Жалоб
+class ReportListViews(LoginRequiredMixin, ListView):
     model = Report
     template_name = "app/report_list.html"
     context_object_name = "reports"
 
-    def get_queryset(self): # Фильтруем данные
-        # сделали так чтобы пользователь видел только свои жалобы
+    def get_queryset(self): #Фильтруем данные 
+        # Мы сделаем так чтобы пользователь видел только свои жалобы 
         return Report.objects.filter(user=self.request.user)
+
+# Профиль
+@login_required
+def profile_view(request):
+    user  = get_object_or_404(User, request.user)
+    return render(
+        request, 
+        "app/profile.html",
+        {"user": user},
+    )
+
+# Изменение Пароля
+
+# Изменение Информации Пользователя
+class UserUpdateView(UpdateView):
+    form_class = UserChangeForm
+    template_name = "app/user_form.html"
+    success_url = reverse_lazy("index")
+    model = User

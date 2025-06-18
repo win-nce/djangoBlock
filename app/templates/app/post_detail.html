@@ -31,14 +31,14 @@
                 </div>
                 <div class="btn-group">
                     {% if user == post.author %}
-                    <a href="" class="btn btn-outline-primary">
+                    <a href="{% url 'post-update' post.pk %}" class="btn btn-outline-primary">
                         Редактировать
                     </a>
-                    <a href="" class="btn btn-outline-danger">
+                    <a href="{% url 'post-delete' post.pk %}" class="btn btn-outline-danger">
                         удалить
                     </a>
                     {% else %}
-                    <a href="" class="btn btn-outline-danger">
+                    <a href="{% url 'create-report' post.pk %}" class="btn btn-outline-danger">
                         Подать Жалобу
                     </a>
                     {% endif %}
