@@ -1,9 +1,37 @@
 # forms
 
 from django import forms
-from app.models import Post, Comment, Report
+from app.models import Post, Comment, Report, Media
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm as BaseUserChangeForm # поменяли имя потому что мы сами класс назвали UserChangeForm  
 from django.contrib.auth.models import User
+
+class PostMediaForm(forms.ModelForm):
+    url = forms.URLField(required=False)
+    file = forms.ImageField(required=False)
+
+    class Meta:
+        model = Media
+        fields = ["url", "file"]
+
+    # Проверка на то что пользователь дал ссылку либо изображение
+
+    def clean(self):
+        cleaned_data = super().clean()
+        url = cleaned_data.get("url")
+        file = cleaned_data.get("file")
+        
+        if url and file:
+            raise forms.ValidationError("Нельзя указывать и ссылку, и файл")
+        if not url and not file:
+            raise forms.ValidationError("Нужно указать либо ссылку, либо файл")
+        return cleaned_data
+
+MediaFormSet = forms.inlineformset_factory(
+    Post, Media,
+    form=PostMediaForm,
+    extra=3,
+    can_delete=True
+)
 
 class PostForm(forms.ModelForm):
     """
@@ -15,6 +43,7 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ["title", "content"]
+
 
 class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(max_length=255)
@@ -62,12 +91,12 @@ class ReportForm(forms.ModelForm):
         }
 
 
-class UserChangeForm():
+class UserChangeForm(BaseUserChangeForm):
     class Meta(BaseUserChangeForm.Meta):
         model  = User
         fields=(
             "username",
             "first_name",
-            "lasat_name",
+            "last_name",
             "email",
         )

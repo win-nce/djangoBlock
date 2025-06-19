@@ -2,8 +2,9 @@ from django.urls import path, reverse_lazy
 from django.contrib.auth.views import LogoutView, PasswordChangeView
 from app.views import (IndexView, CustomLoginView, register, 
                        PostDetailView, PostListView, PostDeleteView, 
-                       PostCreateView, PostUpdateView, 
-                       like_post, dislike_post, create_comment, ReportListViews, create_resport)
+                       PostCreateView, PostUpdateView, ReportListViews,
+                       like_post, dislike_post, create_comment,  create_resport,
+                       UserUpdateView, UserPostListView, profile_view)
 
 
 urlpatterns = [
@@ -14,9 +15,12 @@ urlpatterns = [
 
     # Измененние пароля
     # используем встроенную функцию из джанго, поэтому нужен и реверс лэзи
-    path("auth/change-password", PasswordChangeView.as_view(template_name="app/change_password.html", success_url=reverse_lazy("index"))),
+    path("auth/change-password", PasswordChangeView.as_view(template_name="app/change_password.html", success_url=reverse_lazy("index")), name="password-change"),
 
     # Измененние Инфы Пользователя
+    path("accounts/profile/", profile_view, name="profile"),
+    path("accounts/profile/update/<int:pk>", UserUpdateView.as_view(), name="user-update"),
+    path("accounts/profile/posts", UserPostListView.as_view(), name="user-posts"),
         
     # Посты
     path("posts/<int:pk>", PostDetailView.as_view(), name="post-detail"), # Получение Поста     
