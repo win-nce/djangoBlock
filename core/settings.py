@@ -13,13 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from django.urls import reverse_lazy
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-DEBUG = os.getenv("DEBUG") == 'True'
+SECRET_KEY = 'django-insecure-(n-2^2@q*7i-9=-dl$+&2rxp%f*z!wrqipyr28@_ej0cz9bl6v'
+DEBUG=True
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
